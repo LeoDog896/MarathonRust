@@ -147,11 +147,11 @@ impl Config for PTGameConfig {
                     }
                 }
 
-                let found_game = find_available_game(&server.worlds);
+                let found_game = find_available_game(&mut server.worlds);
                 let (new_id, new_world) = match found_game {
-                    Some((id, mut world)) => {
+                    Some((id, world)) => {
 
-                        if let GameState::Lobby { countdown, waiting_players, .. } = world.state.game_state {
+                        if let GameState::Lobby { waiting_players, .. } = &mut world.state.game_state {
                             waiting_players.push(client_id);
                         }
                         (id, world)
@@ -210,13 +210,13 @@ impl Config for PTGameConfig {
     }
 }
 
-fn find_available_game(worlds: &Worlds<PTGameConfig>) -> Option<(WorldId, &World<PTGameConfig>)> {
-    for (id, world) in worlds.iter() {
+fn find_available_game(worlds: &mut Worlds<PTGameConfig>) -> Option<(WorldId, &mut World<PTGameConfig>)> {
+    for (id, world) in worlds.iter_mut() {
         let game_state = &world.state.game_state;
         let game = &world.state.game;
 
         // Find first game that is available
-        if let GameState::Lobby { countdown, waiting_players, .. } = game_state {
+        if let GameState::Lobby { waiting_players, .. } = game_state {
             if waiting_players.len() < game.max_players() {
                 return Option::from((id, world));
             }
@@ -226,7 +226,7 @@ fn find_available_game(worlds: &Worlds<PTGameConfig>) -> Option<(WorldId, &World
     None
 }
 
-fn create_pt_game(worlds: &mut Worlds<PTGameConfig>) -> (WorldId, &World<PTGameConfig>) {
+fn create_pt_game(worlds: &mut Worlds<PTGameConfig>) -> (WorldId, &mut World<PTGameConfig>) {
     let (world_id, world) = worlds.insert(
         DimensionId::default(),
         WorldState {
