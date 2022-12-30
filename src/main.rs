@@ -183,6 +183,7 @@ impl Config for PTGameConfig {
                         client.game_mode(),
                         0,
                         None,
+                        true
                     );
                 }
             }
